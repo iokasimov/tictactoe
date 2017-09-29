@@ -1,0 +1,21 @@
+name: tictactoe
+version: 0.1.0.0
+license: BSD3
+license-file: LICENSE
+author: iokasimov
+maintainer: qkasimov@gmail.com
+category: Web
+build-type: Simple
+extra-source-files: README.md
+cabal-version: >=1.10
+
+library
+  build-depends: base, lens, free, data-default, distributive, adjunctions
+  exposed-modules: Entities.Mark, Entities.Coordinate, Entities.Line, Entities.Board
+  default-extensions: TypeFamilies, MultiParamTypeClasses, ExistentialQuantification, RankNTypes, ScopedTypeVariables
+
+executable tictactoe
+  main-is: Main.hs
+  build-depends: base, lens, free, data-default, distributive, adjunctions
+  default-extensions: TypeFamilies, MultiParamTypeClasses, ExistentialQuantification, RankNTypes, ScopedTypeVariables
+  default-language: Haskell2010
