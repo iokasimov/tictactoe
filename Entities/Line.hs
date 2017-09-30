@@ -1,4 +1,4 @@
-module Entities.Line (Line(..), first, second, third) where
+module Entities.Line (Line(..), first, second, third, check) where
 
 import Control.Lens
 
@@ -21,3 +21,8 @@ second modifier (Line (a,b,c)) =
 third :: Lens' (Line a) a
 third modifier (Line (a,b,c)) = 
 	(\x -> Line (a,b,x)) <$> modifier c
+
+check :: Eq a => Line a -> Maybe a
+check line = if (line ^. first == line ^. second) 
+	&& (line ^. second == line ^. third)
+	then Just $ line ^. first else Nothing 

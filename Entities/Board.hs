@@ -11,27 +11,6 @@ import Entities.Line
 
 data Board a = Board (Line a) (Line a) (Line a) deriving Eq
 
-top :: Lens' (Board a) (Line a)
-top modifier (Board a b c) = (\x -> Board x b c) <$> modifier a
-
-middle :: Lens' (Board a) (Line a)
-middle modifier (Board a b c) = (\x -> Board a x c) <$> modifier b
-
-bottom :: Lens' (Board a) (Line a)
-bottom modifier (Board a b c) = (\x -> Board a b x) <$> modifier c
-
-
-change :: Board a -> a -> Coordinate () -> Board a
-change board m (Coordinate I IV ()) = board & (top . first) .~ m
-change board m (Coordinate I V ()) = board & (top . second) .~ m
-change board m (Coordinate I VI ()) = board & (top . third) .~ m
-change board m (Coordinate II IV ()) = board & (middle . first) .~ m
-change board m (Coordinate II V ()) = board & (middle . second) .~ m
-change board m (Coordinate II VI ()) = board & (middle . third) .~ m
-change board m (Coordinate III IV ()) = board & (bottom . first) .~ m
-change board m (Coordinate III V ()) = board & (bottom . second) .~ m
-change board m (Coordinate III VI ()) = board & (bottom . third) .~ m
-
 instance Show a => Show (Board a) where
 	show board = "---------------------- \n"
 		++ "    IV  V  VI \n"
@@ -72,4 +51,33 @@ instance Adjunction Coordinate Board where
 	unit a = tabulate (\(Coordinate row col ()) -> Coordinate row col a)
 	counit (Coordinate row col board) = index board (Coordinate row col ())
 
+top :: Lens' (Board a) (Line a)
+top modifier (Board a b c) = (\x -> Board x b c) <$> modifier a
+
+middle :: Lens' (Board a) (Line a)
+middle modifier (Board a b c) = (\x -> Board a x c) <$> modifier b
+
+bottom :: Lens' (Board a) (Line a)
+bottom modifier (Board a b c) = (\x -> Board a b x) <$> modifier c
+
+change :: Board a -> a -> Coordinate () -> Board a
+change board m (Coordinate I IV ()) = board & (top . first) .~ m
+change board m (Coordinate I V ()) = board & (top . second) .~ m
+change board m (Coordinate I VI ()) = board & (top . third) .~ m
+change board m (Coordinate II IV ()) = board & (middle . first) .~ m
+change board m (Coordinate II V ()) = board & (middle . second) .~ m
+change board m (Coordinate II VI ()) = board & (middle . third) .~ m
+change board m (Coordinate III IV ()) = board & (bottom . first) .~ m
+change board m (Coordinate III V ()) = board & (bottom . second) .~ m
+change board m (Coordinate III VI ()) = board & (bottom . third) .~ m
+
+check :: Eq a => Board a -> Maybe a
+check board = Entities.Line.check $ board ^. top
+check board = Entities.Line.check $ board ^. middle
+check board = Entities.Line.check $ board ^. bottom
+check board = Entities.Line.check $ Line (board ^. (top . first), board ^. (middle . first), board ^. (bottom . first))
+check board = Entities.Line.check $ Line (board ^. (top . second), board ^. (middle . second), board ^. (bottom . second))
+check board = Entities.Line.check $ Line (board ^. (top . third), board ^. (middle . third), board ^. (bottom . third))
+check board = Entities.Line.check $ Line (board ^. (top . first), board ^. (middle . second), board ^. (bottom . third))
+check board = Entities.Line.check $ Line (board ^. (top . third), board ^. (middle . second), board ^. (bottom . first))
 
