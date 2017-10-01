@@ -1,35 +1,49 @@
-import Data.Default
+import Data.Maybe
 import Data.Monoid
+import Data.Default
 import Control.Monad
 import Control.Monad.Free
 import Data.Functor.Rep
 
-import qualified Entities.Mark as Mark
-import qualified Entities.Coordinate as Coordinate
-import qualified Entities.Board as Board
-import qualified Entities.Player as Player
+import Entities.Mark
+import Entities.Coordinate
+import Entities.Board
+import Entities.Player
 
-type Mark = Mark.Mark
-type Coordinate = Coordinate.Coordinate
-type Board = Board.Board
-type Player = Player.Player
+data Turn = Turn { player' :: Player, board' :: (Board Mark) } 
 
-data Turn = Turn { player' :: Player, board' :: Board Mark } 
+data Play next 
+	= Start next
+	| Ask (Coordinate () -> next)
+	| Wrong (Coordinate ()) next
+	| Loop Turn next
+	| Final String
 
-data Instruction next = Start next | Move (Turn -> next) | End Player
-type Playing = Free Instruction
+type Playing = Free Play
 
-alternating :: Turn -> IO Turn
-alternating (Turn player board) = 
-	move (Player.another player) board where
+rules :: Playing ()
+rules = Free $ Start $ gameloop (Turn Crosses (def :: Board Mark)) where
 
-		move :: Player -> Board Mark -> IO Turn
-		move player board = do
-			coordinate <- Coordinate.ask
-			if index board coordinate /= Mark.E
-			then print "This cell already filled" >> move player board
-			else return $ Turn player $ Board.change board (Player.whose player) coordinate
+	gameloop :: Turn -> Playing ()
+	gameloop turn = case check (board' turn) of
+			Just E -> Free $ Loop turn $ continue turn
+			Nothing -> Free $ Loop turn $ Free $ Final "Standoff here!"
+			Just O -> Free $ Loop turn $ Free $ Final "Noughts win!"
+			Just X -> Free $ Loop turn $ Free $ Final "Crosses win!"
 
-main = print "typechecked"
+	continue :: Turn -> Playing ()
+	continue (Turn player board) = Free $ Ask $ \coordinate ->
+		if index board coordinate /= E
+		then Free $ Wrong coordinate $ gameloop $ Turn player board
+		else gameloop $ Turn (another player) $
+			change board (whose player) coordinate
 
+run :: Playing () -> IO ()
+run (Pure r) = return r
+run (Free (Start next)) = run next
+run (Free (Ask f)) = print "Your turn: " >> ask >>= run . f
+run (Free (Wrong coordinate next)) = print ((show coordinate) ++ " already filled") >> run next
+run (Free (Loop turn next)) = print (board' turn) >> run next
+run (Free (Final message)) = print message
 
+main = run rules
