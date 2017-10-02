@@ -1,3 +1,4 @@
+import Data.List
 import Data.Maybe
 import Data.Monoid
 import Data.Default
@@ -26,10 +27,12 @@ rules = Free $ Start $ gameloop (Turn Crosses (def :: Board Mark)) where
 
 	gameloop :: Turn -> Playing ()
 	gameloop turn = case check (board' turn) of
-			Just E -> Free $ Loop turn $ continue turn
-			Nothing -> Free $ Loop turn $ Free $ Final "Standoff here!"
-			Just O -> Free $ Loop turn $ Free $ Final "Noughts win!"
-			Just X -> Free $ Loop turn $ Free $ Final "Crosses win!"
+		Just E -> Free $ Loop turn $ continue turn
+		Just O -> Free $ Loop turn $ Free $ Final "Noughts win!"
+		Just X -> Free $ Loop turn $ Free $ Final "Crosses win!"
+		Nothing -> if not $ ended (board' turn) 
+			then Free $ Loop turn $ continue turn 
+			else Free $ Loop turn $ Free $ Final "Standoff here!"
 
 	continue :: Turn -> Playing ()
 	continue (Turn player board) = Free $ Ask $ \coordinate ->
@@ -37,6 +40,18 @@ rules = Free $ Start $ gameloop (Turn Crosses (def :: Board Mark)) where
 		then Free $ Wrong coordinate $ gameloop $ Turn player board
 		else gameloop $ Turn (another player) $
 			change board (whose player) coordinate
+
+	ended :: Board Mark -> Bool
+	ended board = maybe True (const False) $ find (== E) $
+		index board (Coordinate I IV ()) :
+		index board (Coordinate I V ()) :
+		index board (Coordinate I VI ()) :
+		index board (Coordinate II IV ()) :
+		index board (Coordinate II V ()) :
+		index board (Coordinate II VI ()) :
+		index board (Coordinate III IV ()) :
+		index board (Coordinate III V ()) :
+		index board (Coordinate III VI ()) : []
 
 run :: Playing () -> IO ()
 run (Pure r) = return r

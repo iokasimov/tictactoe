@@ -1,6 +1,8 @@
 module Entities.Board (Board(..), top, middle, bottom, change, Entities.Board.check) where
 
+import Data.Monoid
 import Data.Default
+import Data.Foldable
 import Data.Distributive
 import Data.Functor.Rep
 import Data.Functor.Adjunction
@@ -71,22 +73,11 @@ change board m (Coordinate III IV ()) = board & (bottom . first) .~ m
 change board m (Coordinate III V ()) = board & (bottom . second) .~ m
 change board m (Coordinate III VI ()) = board & (bottom . third) .~ m
 
--- how this piece of ugly code can be reduced?
 check :: Eq a => Board a -> Maybe a
-check board = case Entities.Line.check $ board ^. top of
-	Nothing -> case Entities.Line.check $ board ^. middle of
-		Nothing -> case Entities.Line.check $ board ^. bottom of
-			Nothing -> case Entities.Line.check $ Line (board ^. (top . first), board ^. (middle . first), board ^. (bottom . first)) of
-				Nothing -> case Entities.Line.check $ Line (board ^. (top . second), board ^. (middle . second), board ^. (bottom . second)) of
-					Nothing -> case Entities.Line.check $ Line (board ^. (top . third), board ^. (middle . third), board ^. (bottom . third)) of
-						Nothing -> case Entities.Line.check $ Line (board ^. (top . first), board ^. (middle . second), board ^. (bottom . third)) of
-							Nothing -> case Entities.Line.check $ Line (board ^. (top . third), board ^. (middle . second), board ^. (bottom . first)) of
-								Nothing -> Nothing
-								Just h -> Just h
-							Just g -> Just g
-						Just f -> Just f
-					Just e -> Just e		
-				Just d -> Just d
-			Just c -> Just c
-		Just b -> Just b
-	Just a -> Just a
+check board = getFirst $ fold $ (First . Entities.Line.check) <$>
+	(board ^. top) : (board ^. middle) : (board ^. bottom) : -- checking rows
+	Line (board ^. (top . first), board ^. (middle . first), board ^. (bottom . first)) : -- first column 
+	Line (board ^. (top . second), board ^. (middle . second), board ^. (bottom . second)) : -- second column
+	Line (board ^. (top . third), board ^. (middle . third), board ^. (bottom . third)) : -- third column
+	Line (board ^. (top . first), board ^. (middle . second), board ^. (bottom . third)) : -- main diagonal
+	Line (board ^. (top . third), board ^. (middle . second), board ^. (bottom . first)) : [] -- minor diagonal
