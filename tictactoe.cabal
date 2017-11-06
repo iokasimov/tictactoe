@@ -12,10 +12,10 @@ cabal-version: >=1.10
 library
   build-depends: base, lens, free, data-default, distributive, adjunctions
   exposed-modules: Entities.Mark, Entities.Coordinate, Entities.Line, Entities.Board
-  default-extensions: TypeFamilies, MultiParamTypeClasses, ExistentialQuantification, RankNTypes, ScopedTypeVariables, ViewPatterns
+  default-extensions: TypeFamilies, MultiParamTypeClasses, ExistentialQuantification, RankNTypes, ScopedTypeVariables, ViewPatterns, PatternSynonyms
 
 executable tictactoe
   main-is: Main.hs
   build-depends: base, lens, free, data-default, distributive, adjunctions
-  default-extensions: TypeFamilies, MultiParamTypeClasses, ExistentialQuantification, RankNTypes, ScopedTypeVariables, ViewPatterns
+  default-extensions: TypeFamilies, MultiParamTypeClasses, ExistentialQuantification, RankNTypes, ScopedTypeVariables, ViewPatterns, PatternSynonyms
   default-language: Haskell2010

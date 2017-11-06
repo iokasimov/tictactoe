@@ -31,7 +31,7 @@ rules = Free $ Start $ gameloop (Turn Crosses (def :: Board Mark)) where
 		Just O -> Free $ Loop turn $ Free $ Final "Noughts win!"
 		Just X -> Free $ Loop turn $ Free $ Final "Crosses win!"
 		Nothing -> if not $ ended (board' turn) 
-			then Free $ Loop turn $ continue turn 
+			then Free $ Loop turn $ continue turn
 			else Free $ Loop turn $ Free $ Final "Standoff here!"
 
 	continue :: Turn -> Playing ()
@@ -43,15 +43,9 @@ rules = Free $ Start $ gameloop (Turn Crosses (def :: Board Mark)) where
 
 	ended :: Board Mark -> Bool
 	ended board = maybe True (const False) $ find (== E) $
-		index board (Coordinate I IV ()) :
-		index board (Coordinate I V ()) :
-		index board (Coordinate I VI ()) :
-		index board (Coordinate II IV ()) :
-		index board (Coordinate II V ()) :
-		index board (Coordinate II VI ()) :
-		index board (Coordinate III IV ()) :
-		index board (Coordinate III V ()) :
-		index board (Coordinate III VI ()) : []
+		index board (I_IV ()) : index board (I_V ()) : index board (I_VI ()) :
+		index board (II_IV ()) : index board (II_V ()) : index board (II_VI ()) :
+		index board (III_IV ()) : index board (III_V ()) : index board (III_VI ()) : []
 
 run :: Playing () -> IO ()
 run (Pure r) = return r
