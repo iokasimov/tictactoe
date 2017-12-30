@@ -3,7 +3,7 @@ version: 0.1.0.0
 license: BSD3
 license-file: LICENSE
 author: iokasimov
-maintainer: qkasimov@gmail.com
+maintainer: iokasimov.m@gmail.com
 category: Web
 build-type: Simple
 extra-source-files: README.md
